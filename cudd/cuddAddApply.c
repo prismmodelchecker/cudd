@@ -734,6 +734,341 @@ Cudd_addLog(
 } /* end of Cudd_addLog */
 
 
+/**
+  @brief Floor of an ADD.
+
+  @return NULL if not a terminal case; floor(f) otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addMonadicApply
+
+*/
+DdNode *
+Cudd_addFloor(
+  DdManager * dd,
+  DdNode * f)
+{
+    if (cuddIsConstant(f)) {
+	CUDD_VALUE_TYPE value = floor(cuddV(f));
+	DdNode *res = cuddUniqueConst(dd,value);
+	return(res);
+    }
+    return(NULL);
+
+} /* end of Cudd_addFloor */
+
+
+/**
+  @brief Ceiling of an ADD.
+
+  @return NULL if not a terminal case; ceil(f) otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addMonadicApply
+
+*/
+DdNode *
+Cudd_addCeil(
+  DdManager * dd,
+  DdNode * f)
+{
+    if (cuddIsConstant(f)) {
+	CUDD_VALUE_TYPE value = ceil(cuddV(f));
+	DdNode *res = cuddUniqueConst(dd,value);
+	return(res);
+    }
+    return(NULL);
+
+} /* end of Cudd_addCeiling */
+
+
+/**
+  @brief 1 if f==g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f==g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addEquals(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ONE(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) return(DD_ZERO(dd));
+    if (F > G) { /* swap f and g */
+	*f = G;
+	*g = F;
+    }
+    return(NULL);
+
+} /* end of Cudd_addEquals */
+
+
+/**
+  @brief 1 if f!=g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f!=g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addNotEquals(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ZERO(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) return(DD_ONE(dd));
+    if (F > G) { /* swap f and g */
+	*f = G;
+	*g = F;
+    }
+    return(NULL);
+
+} /* end of Cudd_addNotEquals */
+
+
+/**
+  @brief 1 if f>g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f>g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addGreaterThan(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ZERO(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+		if (cuddV(F)>cuddV(G)) return (DD_ONE(dd)); else return (DD_ZERO(dd));
+    }
+    return(NULL);
+
+} /* end of Cudd_addGreaterThan */
+
+
+/**
+  @brief 1 if f>=g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f>=g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addGreaterThanEquals(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ONE(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+		if (cuddV(F)>=cuddV(G)) return (DD_ONE(dd)); else return (DD_ZERO(dd));
+    }
+    return(NULL);
+
+} /* end of Cudd_addGreaterThanEquals */
+
+
+/**
+  @brief 1 if f<g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f<g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addLessThan(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ZERO(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+		if (cuddV(F)<cuddV(G)) return (DD_ONE(dd)); else return (DD_ZERO(dd));
+    }
+    return(NULL);
+
+} /* end of Cudd_addLessThan */
+
+
+/**
+  @brief 1 if f<=g; 0 otherwise.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is 1 if f<=g; 0 otherwise.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addLessThanEquals(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *F, *G;
+
+    F = *f; G = *g;
+    if (F == G) return(DD_ONE(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+		if (cuddV(F)<=cuddV(G)) return (DD_ONE(dd)); else return (DD_ZERO(dd));
+    }
+    return(NULL);
+
+} /* end of Cudd_addLessThanEquals */
+
+
+/**
+  @brief f to the power of g.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is f to the power of g.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addPow(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *res;
+    DdNode *F, *G;
+    CUDD_VALUE_TYPE value;
+
+    F = *f; G = *g;
+    if (G == DD_ZERO(dd)) return(DD_ONE(dd));
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+	value = pow(cuddV(F), cuddV(G));
+	res = cuddUniqueConst(dd,value);
+	return(res);
+    }
+    return(NULL);
+
+} /* end of Cudd_addPow */
+
+
+/**
+  @brief f modulo g.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is f modulo g.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addMod(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+    DdNode *res;
+    DdNode *F, *G;
+    int rem;
+    CUDD_VALUE_TYPE value;
+
+    F = *f; G = *g;
+    if (cuddIsConstant(F) && cuddIsConstant(G)) {
+	// If g is <=0, then result is NaN
+	if (cuddV(G) <= 0) value = (0.0/0.0);
+	// Take care of negative case (% is remainder, not modulo)
+	else {
+		rem = ((int)cuddV(F) % (int)cuddV(G));
+		if (rem < 0) rem += (int)cuddV(G);
+		value = rem;
+	}
+	// Create/return result
+	res = cuddUniqueConst(dd,value);
+	return(res);
+    }
+    return(NULL);
+
+} /* end of Cudd_addMod */
+
+
+/**
+  @brief log f base g.
+
+  @return NULL if not a terminal case; f op g otherwise, where f op g is log f base g.
+
+  @sideeffect None
+
+  @see Cudd_addApply
+
+*/
+DdNode *
+Cudd_addLogXY(
+  DdManager * dd,
+  DdNode ** f,
+  DdNode ** g)
+{
+	DdNode *res;
+	DdNode *F, *G;
+	CUDD_VALUE_TYPE value;
+
+	F = *f; G = *g;
+	if (cuddIsConstant(F) && cuddIsConstant(G)) {
+	// If base is <=0 or ==1 (or +Inf/NaN), then result is NaN
+	if (cuddV(G) <= 0 || cuddV(G) == 1.0 || G==DD_PLUS_INFINITY(dd) || cuddV(G) != cuddV(G)) value = (0.0/0.0);
+	// If arg is <0 or NaN, then result is NaN
+	else if (cuddV(F) < 0 || cuddV(F) != cuddV(F)) value = (0.0/0.0);
+	// If arg is +Inf, then result is +Inf
+	else if (F==DD_PLUS_INFINITY(dd)) return DD_PLUS_INFINITY(dd);
+	// If arg is (positive/negative) 0, then result is -Inf
+	else if (cuddV(F) == 0.0 || cuddV(F) == -0.0) return DD_MINUS_INFINITY(dd);
+	// Default case: normal log
+	else value = log(cuddV(F)) / log(cuddV(G));
+	// Create/return result
+	res = cuddUniqueConst(dd,value);
+	return(res);
+	}
+	return(NULL);
+
+} /* end of Cudd_addLogXY */
+
+
 /*---------------------------------------------------------------------------*/
 /* Definition of internal functions                                          */
 /*---------------------------------------------------------------------------*/
