@@ -226,12 +226,16 @@ cuddAddRoundOffRecur(
 {
 
     DdNode *res, *fv, *fvn, *T, *E;
-    double n;
+    double m, n;
     DD_CTFP1 cacheOp;
 
     statLine(dd);
     if (cuddIsConstant(f)) {
-	n = ceil(cuddV(f)*trunc)/trunc;
+        m = cuddV(f)*trunc;
+        n = floor(m);
+	if (m-n >= 0.5) 
+	    n = n + 1;
+        n = n / trunc;
 	res = cuddUniqueConst(dd,n);
 	return(res);
     }
