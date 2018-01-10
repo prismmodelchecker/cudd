@@ -470,9 +470,11 @@ Cudd_DumpDot(
 	scan = nodelist[j];
 	while (scan != NULL) {
 	    if (st_is_member(visited,scan)) {
+		if (scan != Cudd_ReadZero(dd)) {
 		retval = fprintf(fp,"\"%#" PRIxPTR "\";\n",
 		    ((mask & (ptruint) scan) / sizeof(DdNode)));
 		if (retval == EOF) goto failure;
+		}
 	    }
 	    scan = scan->next;
 	}
@@ -491,7 +493,7 @@ Cudd_DumpDot(
 	if (retval == EOF) goto failure;
 	/* Account for the possible complement on the root. */
 	if (Cudd_IsComplement(f[i])) {
-	    retval = fprintf(fp," -> \"%#" PRIxPTR "\" [style = dotted];\n",
+	    retval = fprintf(fp," -> \"%#" PRIxPTR "\" [style = dashed];\n",
 		((mask & (ptruint) f[i]) / sizeof(DdNode)));
 	} else {
 	    retval = fprintf(fp," -> \"%#" PRIxPTR "\" [style = solid];\n",
@@ -509,27 +511,36 @@ Cudd_DumpDot(
 		scan = nodelist[j];
 		while (scan != NULL) {
 		    if (st_is_member(visited,scan)) {
+			/* print label (blank) */
+			retval = fprintf(fp,
+			    "\"%#" PRIxPTR "\" [label = \"\"];\n",
+			    ((mask & (ptruint) scan) / sizeof(DdNode)));
+			if (retval == EOF) goto failure;
+			if (cuddT(scan) != Cudd_ReadZero(dd)) {
 			retval = fprintf(fp,
 			    "\"%#" PRIxPTR "\" -> \"%#" PRIxPTR "\";\n",
 			    ((mask & (ptruint) scan) / sizeof(DdNode)),
 			    ((mask & (ptruint) cuddT(scan)) / sizeof(DdNode)));
 			if (retval == EOF) goto failure;
+			}
+			if (cuddE(scan) != Cudd_ReadZero(dd)) {
 			if (Cudd_IsComplement(cuddE(scan))) {
-			    retval = fprintf(fp,
-				"\"%#" PRIxPTR "\" -> \"%#" PRIxPTR
-                                             "\" [style = dotted];\n",
-				((mask & (ptruint) scan) / sizeof(DdNode)),
-				((mask & (ptruint) cuddE(scan)) /
-				sizeof(DdNode)));
-			} else {
 			    retval = fprintf(fp,
 				"\"%#" PRIxPTR "\" -> \"%#" PRIxPTR
                                              "\" [style = dashed];\n",
 				((mask & (ptruint) scan) / sizeof(DdNode)),
 				((mask & (ptruint) cuddE(scan)) /
 				sizeof(DdNode)));
+			} else {
+			    retval = fprintf(fp,
+				"\"%#" PRIxPTR "\" -> \"%#" PRIxPTR
+                                             "\" [style = dotted];\n",
+				((mask & (ptruint) scan) / sizeof(DdNode)),
+				((mask & (ptruint) cuddE(scan)) /
+				sizeof(DdNode)));
 			}
 			if (retval == EOF) goto failure;
+			}
 		    }
 		    scan = scan->next;
 		}
@@ -544,9 +555,11 @@ Cudd_DumpDot(
 	scan = nodelist[j];
 	while (scan != NULL) {
 	    if (st_is_member(visited,scan)) {
+		if (scan != Cudd_ReadZero(dd)) {
 		retval = fprintf(fp,"\"%#" PRIxPTR "\" [label = \"%g\"];\n",
 		    ((mask & (ptruint) scan) / sizeof(DdNode)), cuddV(scan));
 		if (retval == EOF) goto failure;
+		}
 	    }
 	    scan = scan->next;
 	}
