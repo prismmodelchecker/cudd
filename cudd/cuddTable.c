@@ -1494,6 +1494,34 @@ cuddUniqueInterZdd(
 
 
 /**
+ * Helper function: Truncate a double value to approximately
+ * 10^-10 precision (with rounding).
+ *
+ * This is used in cuddUnqiueConstant and cuddRehash to generate a
+ * canonical double value for the hash lookup, ensuring that values that
+ * are close will be hashed to the same bucket.
+ */
+static double truncateDoubleConstant(double value)
+{
+	double trunc, m, n;
+
+	// (round off before doing hash function to ensure
+	//  close valued constants are in the same table)
+	if (finite(value)) {
+		trunc = 10000000000.0; // 10^10
+		m = value * trunc;
+		n = floor(m);
+		if (m-n >= 0.5)
+			n = n + 1;
+		n = n / trunc;
+		return n;
+	} else {
+		return value;
+	}
+}
+
+
+/**
   @brief Checks the unique table for the existence of a constant node.
 
   @details If it does not exist, it creates a new one.  Does not
@@ -1542,7 +1570,39 @@ cuddUniqueConst(
     if (ddAbs(value) < unique->epsilon) {
 	value = 0.0;
     }
-    split.value = value;
+
+    /* PRISM-specific behaviour:
+     * To keep the number of distinct constants with very close double value low,
+     * we would like to identify constants where
+     *   ddEqualVal(value, existing_constant, unique->epsilon)
+     * is true, i.e., where the values differ by less than the CUDD epsilon parameter.
+     *
+     * However, as the lookup in the unique table is performed via a hashtable, we have
+     * to ensure that all constants that are close are hashed into the same bucket
+     * in the hash table.
+     *
+     * This is achieved by performing the hashtable lookup not on the value itself, but
+     * on a truncated/rounded version, i.e., where the precision has been reduced such
+     * that it is ensured that all constants within the epsilon range are hashed to
+     * the same value.
+     *
+     * The procedure is then:
+     *  1) Lookup the bucket (pos) using the truncated value (split.value)
+     *  2) In the linked list of the bucket, search for an exact match
+     *     or a close match
+     *  3) If there is no match, insert the value.
+     *
+     * To ensure that the uniqueness for the constants is not violated, during
+     * rehashing of the unique table for the constants, the truncation has to be
+     * applied as well (see cuddRehash, case for i == CUDD_CONST_INDEX).
+     */
+
+    // this is the original, CUDD version (without truncation):
+    // split.value = value;
+
+    // PRISM version:
+    // use truncated value for hash lookup
+    split.value = truncateDoubleConstant(value);
 
     pos = ddHash(split.bits[0], split.bits[1], unique->constants.shift);
     nodelist = unique->constants.nodelist;
@@ -1553,14 +1613,16 @@ cuddUniqueConst(
      * infinite, since Infinity - Infinity is NaN and NaN < X is 0 for
      * every X.
      */
+    // PRISM: check explicitly for not-a-number (NaN), as NaN != NaN
     while (looking != NULL) {
-	if (looking->type.value == value ||
-	ddEqualVal(looking->type.value,value,unique->epsilon)) {
-	    if (looking->ref == 0) {
-		cuddReclaim(unique,looking);
-	    }
-	    return(looking);
-	}
+        if (looking->type.value == value ||
+            (isnan(value) && isnan(looking->type.value)) ||
+            ddEqualVal(looking->type.value,value,unique->epsilon)) {
+            if (looking->ref == 0) {
+                cuddReclaim(unique,looking);
+            }
+            return(looking);
+        }
 	looking = looking->next;
 #ifdef DD_UNIQUE_PROFILE
 	unique->uniqueLinks++;
@@ -1727,7 +1789,14 @@ cuddRehash(
 	    node = oldnodelist[j];
 	    while (node != NULL) {
 		next = node->next;
-		split.value = cuddV(node);
+
+		// original CUDD version:
+		// split.value = cuddV(node);
+
+		// PRISM version: we have to truncate the value for the hash lookup
+		// (see corresponding comment in cuddUniqueConstant)
+		split.value = truncateDoubleConstant(cuddV(node));
+
 		pos = ddHash(split.bits[0], split.bits[1], shift);
 		node->next = nodelist[pos];
 		nodelist[pos] = node;
