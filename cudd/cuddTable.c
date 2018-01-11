@@ -1595,12 +1595,19 @@ cuddUniqueConst(
      * To ensure that the uniqueness for the constants is not violated, during
      * rehashing of the unique table for the constants, the truncation has to be
      * applied as well (see cuddRehash, case for i == CUDD_CONST_INDEX).
+     *
+     * In addition, we catch the special case of constant zero, since some operations
+     * (e.g., for counting minterms) result in the addition of constants below epsilon.
      */
 
     // this is the original, CUDD version (without truncation):
     // split.value = value;
 
     // PRISM version:
+    // first, deal with zero separately
+	if (value == 0.0 && unique->epsilon > 0.0 && DD_ZERO(unique) != NULL) {
+		return DD_ZERO(unique);
+	}
     // use truncated value for hash lookup
     split.value = truncateDoubleConstant(value);
 

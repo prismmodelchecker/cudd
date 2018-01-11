@@ -139,6 +139,7 @@ Cudd_Init(
     unique->one = cuddUniqueConst(unique,1.0);
     if (unique->one == NULL) return(0);
     cuddRef(unique->one);
+    unique->zero = NULL;
     unique->zero = cuddUniqueConst(unique,0.0);
     if (unique->zero == NULL) return(0);
     cuddRef(unique->zero);
