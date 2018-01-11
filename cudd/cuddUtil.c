@@ -588,11 +588,20 @@ Cudd_CountMinterm(
     double	res;
     CUDD_VALUE_TYPE epsilon;
 
+    /* PRISM modification:
+     * Revert to CUDD 2.5.1 behaviour (unscaled max).
+     * To enable CUDD 3.0.0 behaviour, define CUDD_COUNT_MINTERM_3_0_0
+     */
+
+#ifdef CUDD_COUNT_MINTERM_3_0_0
     /* Scale the maximum number of minterm.  This is done in an attempt
      * to deal with functions that depend on more than 1023, but less
      * than 2044 variables and don't have too many minterms.
      */
     max = pow(2.0,(double)(nvars + DBL_MIN_EXP));
+#else  // !CUDD_COUNT_MINTERM_3_0_0
+    max = pow(2.0,(double)nvars);
+#endif
     if (max >= DD_PLUS_INF_VAL) {
         return((double)CUDD_OUT_OF_MEM);
     }
@@ -606,6 +615,7 @@ Cudd_CountMinterm(
     res = ddCountMintermAux(manager,node,max,table);
     cuddHashTableQuit(table);
     Cudd_SetEpsilon(manager,epsilon);
+#ifdef CUDD_COUNT_MINTERM_3_0_0
     if (res == (double)CUDD_OUT_OF_MEM) {
         return((double)CUDD_OUT_OF_MEM);
     } else if (res >= pow(2.0,(double)(DBL_MAX_EXP + DBL_MIN_EXP))) {
@@ -616,6 +626,13 @@ Cudd_CountMinterm(
         res *= pow(2.0,(double)-DBL_MIN_EXP);
         return(res);
     }
+#else  // !CUDD_COUNT_MINTERM_3_0_0
+    if (res == (double)CUDD_OUT_OF_MEM) {
+        return((double)CUDD_OUT_OF_MEM);
+    } else {
+        return(res);
+    }
+#endif
 
 } /* end of Cudd_CountMinterm */
 
