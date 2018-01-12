@@ -6,8 +6,13 @@
 # Only re-run configure if Makefile doesn't already exist
 
 if [ ! -f Makefile ]; then
+  # Hacking of time-stamps (lost in git) to avoid autoconf issues
+  sleep 1; touch aclocal.m4
+  sleep 1; touch configure; touch config.h.in; touch `find . -name Makefile.in -print`
+  # Build Makefile
   ./configure --prefix="$(pwd)" || exit 1
 fi
+
 
 # Build, install (locally)
 
