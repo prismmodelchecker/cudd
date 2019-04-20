@@ -29,15 +29,15 @@ include $(top_srcdir)/epd/Included.am
 include $(top_srcdir)/mtr/Included.am
 include $(top_srcdir)/dddmp/Included.am
 include $(top_srcdir)/cplusplus/Included.am
-include $(top_srcdir)/nanotrav/Included.am
-include $(top_srcdir)/doc/Included.am
+#include $(top_srcdir)/nanotrav/Included.am
+#include $(top_srcdir)/doc/Included.am
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
 
 .PHONY : 
 
-all: html/index.html doc/cudd.pdf
+all: #html/index.html doc/cudd.pdf
 
 if HAVE_DOXYGEN
 
