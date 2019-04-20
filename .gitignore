@@ -25,3 +25,6 @@ config.status
 Makefile
 libtool
 stamp-h1
+doc/cudd.tex
+dddmp/exp/*.sh
+include
