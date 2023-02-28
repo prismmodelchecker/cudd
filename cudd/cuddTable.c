@@ -1507,7 +1507,7 @@ static double truncateDoubleConstant(double value)
 
 	// (round off before doing hash function to ensure
 	//  close valued constants are in the same table)
-	if (finite(value)) {
+	if (isfinite(value)) {
 		trunc = 10000000000.0; // 10^10
 		m = value * trunc;
 		n = floor(m);
